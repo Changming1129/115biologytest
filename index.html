@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>115(上)七年級自然毅力終極試煉 - 第一段的八重考驗</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: #0b1120;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 35%),
+                radial-gradient(circle at 85% 80%, rgba(16, 185, 129, 0.2), transparent 40%);
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .widescreen-frame {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: auto;
+        }
+        @media (min-width: 768px) {
+            .widescreen-frame {
+                aspect-ratio: 16 / 9;
+                max-height: 88vh;
+            }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(245, 158, 11, 0.6);
+        }
+
+        .btn-rpg {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 0 rgb(67, 56, 202);
+        }
+        .btn-rpg:active:not(:disabled) {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 rgb(67, 56, 202);
+        }
+        .btn-rpg:hover:not(:disabled) {
+            filter: brightness(1.08);
+        }
+
+        .option-btn {
+            transition: all 0.18s ease;
+            box-shadow: 0 4px 0 #cbd5e1;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #94a3b8;
+            border-color: #6366f1;
+        }
+        .option-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 0 0 #cbd5e1;
+        }
+
+        .correct-anim {
+            background-color: #10B981 !important;
+            color: white !important;
+            box-shadow: 0 0 22px rgba(16, 185, 129, 0.7) !important;
+            transform: scale(1.01);
+            border-color: #059669 !important;
+        }
+        .wrong-anim {
+            animation: shake 0.4s;
+            background-color: #EF4444 !important;
+            color: white !important;
+            border-color: #B91C1C !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        @keyframes float-up {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-55px) scale(1.25); }
+        }
+        .exp-float {
+            animation: float-up 0.85s ease-out forwards;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.7)); }
+            50% { transform: scale(1.06); filter: drop-shadow(0 0 25px rgba(245, 158, 11, 1)); }
+        }
+        .gold-glow {
+            animation: pulse-gold 2s infinite ease-in-out;
+        }
+
+        @keyframes chest-open {
+            0% { transform: scale(0.9) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-6deg); }
+            50% { transform: scale(1.1) rotate(6deg); }
+            75% { transform: scale(1.15) rotate(-3deg); }
+            100% { transform: scale(1.2) rotate(0deg); }
+        }
+        .chest-anim {
+            animation: chest-open 0.7s ease-in-out;
+        }
+
+        .toast {
+            transition: all 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform: translateX(130%);
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-4">
+
+    <!-- 隱藏式表單與 Iframe：確保跨網域寫入 100% 成功 -->
+    <iframe name="hidden_gas_iframe" id="hidden_gas_iframe" style="display:none;"></iframe>
+    <form id="gas-hidden-form" action="" method="POST" target="hidden_gas_iframe" style="display:none;">
+        <input type="hidden" name="action" value="submit">
+        <input type="hidden" name="data" id="gas-form-data-input">
+        <input type="hidden" name="name" id="gas-form-name-input">
+        <input type="hidden" name="score" id="gas-form-score-input">
+        <input type="hidden" name="level" id="gas-form-level-input">
+        <input type="hidden" name="stage" id="gas-form-stage-input">
+        <input type="hidden" name="answered" id="gas-form-answered-input">
+        <input type="hidden" name="completed" id="gas-form-completed-input">
+    </form>
+
+    <!-- 主遊戲容器 -->
+    <div class="widescreen-frame game-container rounded-2xl overflow-hidden relative flex flex-col shadow-2xl">
+        
+        <!-- 頂部狀態列 -->
+        <div id="status-bar" class="hidden bg-slate-900 text-white px-3 py-2 sm:px-6 sm:py-2.5 flex flex-wrap justify-between items-center gap-2 border-b-4 border-amber-400 z-10 shrink-0">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <div class="bg-indigo-950 px-2.5 py-1 rounded-lg border border-indigo-700 text-amber-300 font-bold text-xs sm:text-sm flex items-center shadow-inner">
+                    <span id="player-avatar-icon" class="mr-1 text-base">🔬</span>
+                    <span id="player-tag">勇者</span>
+                    <span id="player-title-badge" class="ml-1.5 text-[10px] bg-amber-500/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.5 rounded font-normal">實習探險家</span>
+                </div>
+                <div class="bg-indigo-800 px-2 sm:px-2.5 py-1 rounded-lg border border-indigo-500 font-bold text-xs sm:text-sm text-white">
+                    <i class="fas fa-map-marked-alt text-yellow-300 mr-1"></i>關卡 <span id="current-stage">1</span>/8
+                </div>
+                <div class="font-bold text-xs sm:text-sm text-slate-200 hidden sm:inline-block">
+                    本關第 <span id="stage-progress" class="text-amber-300 text-base font-extrabold">1</span>/10 題
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="openEquipmentModal()" class="flex items-center space-x-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-400/50 text-xs sm:text-sm font-bold transition shadow-sm hover:scale-105 active:scale-95">
+                    <i class="fas fa-shield-alt text-amber-400"></i>
+                    <span>裝備庫</span>
+                    <span id="gear-count-badge" class="bg-amber-500 text-slate-950 text-[10px] font-black px-1.5 py-0.5 rounded-full ml-1">1/9</span>
+                </button>
+                <div class="text-xs sm:text-sm font-bold text-emerald-300">
+                    <i class="fas fa-coins text-yellow-400 mr-0.5"></i><span id="player-score">0</span>
+                </div>
+                <div class="font-black text-sm sm:text-base text-yellow-400 drop-shadow">
+                    LV.<span id="player-level">1</span>
+                </div>
+                <div class="w-16 sm:w-28 bg-slate-950 rounded-full h-3.5 border-2 border-slate-700 relative overflow-hidden shadow-inner">
+                    <div id="exp-bar" class="bg-gradient-to-r from-amber-400 to-yellow-200 h-full transition-all duration-300" style="width: 0%"></div>
+                    <div class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-slate-900 mix-blend-overlay">
+                        <span id="exp-text">0 / 100</span>
+                    </div>
+                </div>
+                <button onclick="requestExitEarly()" class="text-xs bg-red-900/70 hover:bg-red-800 text-red-200 px-2 py-1 rounded border border-red-700/50 transition">
+                    結算離開
+                </button>
+            </div>
+        </div>
+
+        <!-- 歡迎畫面 (首頁自適應 16:9 雙欄架構) -->
+        <div id="screen-start" class="flex-1 flex flex-col md:flex-row items-stretch p-4 sm:p-7 gap-5 overflow-y-auto bg-gradient-to-br from-indigo-50 via-white to-amber-50">
+            <!-- 左側出發區 -->
+            <div class="flex-1 flex flex-col justify-center text-left space-y-3.5">
+                <div class="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-900 px-3.5 py-1 rounded-full text-xs font-bold w-max border border-indigo-200">
+                    <span class="animate-pulse">✨</span> 七年級自然上學期生物科專屬系統
+                </div>
+                
+                <div>
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight">
+                        115(上)七年級自然毅力終極試煉
+                    </h1>
+                    <p class="text-base sm:text-xl font-black text-indigo-600 mt-1">
+                        第一段的八重考驗 <span class="text-amber-600 font-bold">(全套80題)</span>
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-bold">
+                    <div class="bg-white/80 p-2 rounded-xl border border-indigo-100 shadow-sm">
+                        <div class="text-indigo-600 text-base">🗺️ 8 大關卡</div>
+                        <div class="text-slate-500 text-[11px]">循序漸進考驗</div>
+                    </div>
+                    <div class="bg-white/80 p-2 rounded-xl border border-indigo-100 shadow-sm">
+                        <div class="text-emerald-600 text-base">🔬 80 道題</div>
+                        <div class="text-slate-500 text-[11px]">完整大考重點</div>
+                    </div>
+                    <div class="bg-white/80 p-2 rounded-xl border border-indigo-100 shadow-sm">
+                        <div class="text-amber-600 text-base">🎒 裝備收集</div>
+                        <div class="text-slate-500 text-[11px]">通關獲取神器</div>
+                    </div>
+                    <div class="bg-white/80 p-2 rounded-xl border border-indigo-100 shadow-sm">
+                        <div class="text-purple-600 text-base">☁️ 雲端即時</div>
+                        <div class="text-slate-500 text-[11px]">試算表榜單</div>
+                    </div>
+                </div>
+
+                <!-- 學生輸入區 -->
+                <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-md border-2 border-indigo-100 space-y-2.5">
+                    <label class="block text-xs sm:text-sm font-bold text-slate-700">
+                        <i class="fas fa-id-card text-indigo-500 mr-1.5"></i>請輸入挑戰者身分（班級 / 座號 / 姓名）：
+                    </label>
+                    <input type="text" id="player-input-name" placeholder="例如：701 08 林小華" 
+                        class="w-full text-base sm:text-lg font-bold px-3.5 py-2.5 border-2 border-indigo-200 rounded-xl focus:border-indigo-600 focus:outline-none transition">
+                    
+                    <div class="flex flex-col sm:flex-row gap-2 pt-1">
+                        <button onclick="startGame()" class="btn-rpg flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-base sm:text-lg font-black py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2">
+                            <span>展開試煉之旅</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button onclick="openEquipmentModal()" class="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border-2 border-amber-300 font-bold rounded-xl text-sm transition flex items-center justify-center space-x-1.5">
+                            <i class="fas fa-shield-alt text-amber-600"></i>
+                            <span>檢視裝備庫</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側排行榜看板 -->
+            <div class="w-full md:w-80 lg:w-96 bg-white rounded-2xl p-4 border-2 border-indigo-100 shadow-md flex flex-col">
+                <div class="flex justify-between items-center border-b pb-2 mb-2 border-slate-200">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-trophy text-amber-500 text-lg"></i>
+                        <h3 class="font-extrabold text-base sm:text-lg text-slate-800">全體勇者排行榜</h3>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="loadLeaderboard()" title="重新整理" class="text-xs text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded border border-indigo-200">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button onclick="openGasConfigModal()" title="設定 GAS 網址" class="text-xs text-slate-500 hover:bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="leaderboard-list" class="flex-1 overflow-y-auto space-y-1.5 pr-1 min-h-[220px]">
+                    <div class="text-center py-8 text-slate-400 text-sm">
+                        <i class="fas fa-spinner fa-spin text-lg mb-2 text-indigo-500"></i>
+                        <p>載入排行榜資料中...</p>
+                    </div>
+                </div>
+
+                <div class="mt-2 pt-2 border-t border-slate-150 text-[11px] text-slate-400 flex justify-between items-center">
+                    <span>即時雲端成績系統</span>
+                    <span id="gas-status-indicator" class="text-emerald-600 font-semibold">● 連線已備妥</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遊戲問答畫面 -->
+        <div id="screen-game" class="hidden flex-1 flex flex-col p-4 sm:p-6 relative bg-slate-50 overflow-hidden justify-between">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border-2 border-indigo-100 flex flex-col justify-center flex-1 max-h-[46%] overflow-y-auto">
+                <div class="flex items-center justify-between text-indigo-600 font-bold mb-1 text-sm sm:text-base">
+                    <span><i class="fas fa-feather-alt text-amber-500 mr-1.5"></i>第 <span id="total-q-num">1</span> 題 / 共 80 題</span>
+                    <span class="text-xs sm:text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-0.5 rounded-full">連擊 x<span id="combo-count">0</span></span>
+                </div>
+                <h2 id="question-text" class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-800 leading-snug tracking-wide">
+                    題目載入中...
+                </h2>
+            </div>
+            
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-5 shrink-0">
+                <!-- 選項由 JS 生成 -->
+            </div>
+
+            <div id="float-exp" class="absolute hidden top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl sm:text-5xl font-black text-amber-400 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)] z-20 pointer-events-none">
+                +EXP!
+            </div>
+        </div>
+
+        <!-- 關卡結算畫面 -->
+        <div id="screen-stage-clear" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-indigo-50 to-white overflow-y-auto">
+            <div id="stage-chest-icon" class="text-amber-500 text-6xl sm:text-7xl mb-2 gold-glow cursor-pointer transition transform hover:scale-110" onclick="triggerChestOpen()">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-1">Stage <span id="clear-stage-num">1</span> Clear!</h2>
+            <p class="text-lg sm:text-xl text-indigo-600 font-bold mb-3">第 <span id="clear-stage-cn">一</span> 重考驗突破！毅力驚人！</p>
+            
+            <!-- 關卡掉落裝備卡片 -->
+            <div id="stage-loot-card" class="bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 border-2 border-amber-400 rounded-2xl p-4 mb-4 max-w-md w-full shadow-lg">
+                <div class="flex items-center space-x-3.5">
+                    <div id="loot-icon" class="w-14 h-14 bg-white rounded-xl border-2 border-amber-300 flex items-center justify-center text-3xl shadow-inner shrink-0">
+                        🔬
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="text-[11px] font-black text-amber-700 uppercase tracking-wider flex items-center">
+                            <span class="bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded text-[10px] mr-1.5 font-black">NEW</span>
+                            戰利品掉落獲得！
+                        </div>
+                        <div id="loot-name" class="text-base sm:text-lg font-black text-slate-900">裝備名稱</div>
+                        <div id="loot-desc" class="text-xs text-slate-600 font-medium">裝備數值加成說明</div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-amber-200/80 flex items-center justify-between">
+                    <span id="loot-equip-status" class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        <i class="fas fa-check-circle mr-1"></i>已為您自動裝上
+                    </span>
+                    <button id="loot-equip-btn" onclick="toggleCurrentLootEquip()" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black rounded-lg text-xs shadow transition">
+                        切換裝備狀態
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-200 mb-4 max-w-sm w-full grid grid-cols-2 gap-3">
+                <div class="text-center border-r border-slate-200">
+                    <div class="text-slate-500 text-xs sm:text-sm font-bold">目前等級</div>
+                    <div class="text-2xl sm:text-3xl font-black text-amber-500">LV.<span id="clear-level">1</span></div>
+                </div>
+                <div class="text-center">
+                    <div class="text-slate-500 text-xs sm:text-sm font-bold">累積總分</div>
+                    <div class="text-2xl sm:text-3xl font-black text-indigo-600"><span id="clear-score">0</span></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="nextStage()" class="btn-rpg bg-emerald-600 hover:bg-emerald-500 text-white text-lg sm:text-xl font-bold py-3 px-8 rounded-xl shadow-lg">
+                    啟程下一關 <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+                <button onclick="saveAndExit()" class="px-5 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-base font-bold rounded-xl transition">
+                    暫停並上傳成績
+                </button>
+            </div>
+        </div>
+
+        <!-- 最終通關畫面 -->
+        <div id="screen-game-clear" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-amber-50 to-yellow-100 overflow-y-auto">
+            <div class="text-amber-500 text-6xl sm:text-7xl mb-2 drop-shadow-md gold-glow">
+                👑
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-black text-amber-600 mb-1">試煉大成・生物傳奇宗師！</h2>
+            <p class="text-lg sm:text-xl text-slate-800 font-bold mb-4">恭喜完成 80 題全套考驗，解鎖終極全套神話武裝！</p>
+            
+            <div class="bg-white p-5 rounded-2xl shadow-xl border-4 border-amber-300 mb-5 max-w-md w-full">
+                <div class="grid grid-cols-3 gap-3 text-center mb-3">
+                    <div>
+                        <div class="text-slate-500 font-bold text-xs sm:text-sm">最終等級</div>
+                        <div class="text-2xl sm:text-3xl font-black text-indigo-700">LV.<span id="final-level"></span></div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 font-bold text-xs sm:text-sm">達成總分</div>
+                        <div class="text-2xl sm:text-3xl font-black text-amber-500"><span id="final-score"></span></div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 font-bold text-xs sm:text-sm">完成題數</div>
+                        <div class="text-2xl sm:text-3xl font-black text-emerald-600">80 / 80</div>
+                    </div>
+                </div>
+                <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-xs text-amber-900 font-bold">
+                    🎖️ 榮獲最高稱號：<span class="text-amber-600 font-extrabold text-sm">「生命宇宙探索大導師」</span>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="btn-rpg bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-bold py-3.5 px-9 rounded-xl">
+                <i class="fas fa-home mr-2 text-yellow-300"></i> 返回首頁排行榜
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 勇者裝備庫視窗 -->
+    <div id="equipment-modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border-4 border-amber-400 flex flex-col max-h-[90vh]">
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 text-white flex justify-between items-center border-b-2 border-amber-400">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🎒</span>
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-black text-amber-300">勇者生物裝備庫</h3>
+                        <p class="text-xs text-slate-300">突破關卡解鎖神器，點擊按鈕自由「裝上」或「卸下」！</p>
+                    </div>
+                </div>
+                <button onclick="closeEquipmentModal()" class="text-slate-400 hover:text-white text-2xl px-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+                <!-- 勇者頭銜與數值 -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-14 h-14 bg-indigo-100 rounded-2xl border-2 border-indigo-400 flex items-center justify-center text-3xl shadow-sm">
+                            <span id="modal-char-avatar">🔬</span>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500 font-bold">目前勇者身份</div>
+                            <div class="text-lg font-black text-slate-900" id="modal-char-name">冒險者</div>
+                            <div class="text-xs text-indigo-600 font-extrabold flex items-center mt-0.5">
+                                <i class="fas fa-medal mr-1 text-amber-500"></i>
+                                <span id="modal-char-title">實習觀察員</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-center">
+                            <div class="text-[10px] text-slate-400 font-bold">已裝備數</div>
+                            <div class="text-base font-black text-indigo-600"><span id="modal-equipped-count">1</span> 件</div>
+                        </div>
+                        <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-center">
+                            <div class="text-[10px] text-slate-400 font-bold">當前總加成</div>
+                            <div class="text-base font-black text-emerald-600">+<span id="modal-gear-bonus">0</span>% EXP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 裝備欄清單 -->
+                <div class="flex items-center justify-between">
+                    <h4 class="font-black text-slate-800 text-sm sm:text-base flex items-center">
+                        <i class="fas fa-magic text-amber-500 mr-2"></i> 裝備與神器一覽：
+                    </h4>
+                    <span class="text-xs text-slate-500">穿戴中的裝備享有數值加成</span>
+                </div>
+                <div id="equipment-slots-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- 裝備動態渲染 -->
+                </div>
+            </div>
+
+            <div class="bg-slate-100 p-3 text-center border-t border-slate-200">
+                <button onclick="closeEquipmentModal()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow">
+                    配置完成，返回試煉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 答錯解析浮層 (取代 alert) -->
+    <div id="wrong-modal-overlay" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div id="wrong-modal-content" class="bg-white rounded-2xl shadow-2xl p-5 sm:p-7 max-w-md w-full border-4 border-red-500 text-center transform scale-95 opacity-0 transition-all duration-200">
+            <div class="text-red-500 text-5xl mb-3">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-900 mb-1">遺憾！答案有誤</h3>
+            <p class="text-xs text-slate-500 mb-4">累積的連擊中斷了，請仔細記牢正確重點：</p>
+            
+            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3.5 mb-5 text-left">
+                <div class="text-xs font-bold text-red-600 mb-1">本題正確答案為：</div>
+                <div id="correct-answer-display" class="text-lg font-black text-slate-900 leading-snug">
+                    --
+                </div>
+            </div>
+
+            <button onclick="closeWrongModalAndNext()" class="btn-rpg w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl text-base shadow">
+                吸取經驗，迎戰下一題 <i class="fas fa-arrow-right ml-1"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 升級慶典浮層 -->
+    <div id="rich-levelup-modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div id="rich-levelup-content" class="bg-gradient-to-b from-amber-400 via-yellow-200 to-amber-500 rounded-3xl p-1 shadow-2xl max-w-sm w-full transform scale-95 transition-all duration-200">
+            <div class="bg-white rounded-[22px] p-6 text-center">
+                <div class="text-5xl mb-2 gold-glow">🎉</div>
+                <div class="text-xs font-black text-amber-600 uppercase tracking-widest">LEVEL UP!</div>
+                <h3 class="text-3xl font-black text-slate-900 mb-2">等級全面突破！</h3>
+                
+                <div class="flex items-center justify-center space-x-3 my-4">
+                    <span class="text-xl font-black text-slate-400">LV.<span id="levelup-old-lvl">1</span></span>
+                    <i class="fas fa-long-arrow-alt-right text-2xl text-amber-500"></i>
+                    <span class="text-3xl font-black text-amber-600">LV.<span id="levelup-new-lvl">2</span></span>
+                </div>
+
+                <div class="bg-amber-50 rounded-xl p-3 border border-amber-200 mb-5">
+                    <div class="text-xs text-amber-700 font-bold">解鎖勇者稱號</div>
+                    <div id="levelup-new-title" class="text-base font-black text-slate-900 mt-0.5">顯微調焦大師</div>
+                </div>
+
+                <button onclick="closeLevelUpModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-sm shadow">
+                    繼續勇往直前
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAS 試算表設定視窗 -->
+    <div id="gas-modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-5 max-w-md w-full border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-black text-slate-800 text-base">設定 Google Apps Script (GAS) 網址</h3>
+                <button onclick="closeGasConfigModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+                將您部署成功的 Google Apps Script 網頁應用程式 URL 貼於此處，系統將自動同步並將學生進度儲存至 Google 試算表。
+            </p>
+            <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec"
+                class="w-full text-xs p-2.5 border border-slate-300 rounded-lg mb-4 font-mono focus:border-indigo-600 focus:outline-none">
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeGasConfigModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg">取消</button>
+                <button onclick="saveGasConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow">儲存並讀取</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用彈跳對話框 (取消/確認) -->
+    <div id="msg-dialog" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-indigo-200 text-center">
+            <h3 id="msg-dialog-title" class="text-xl font-black text-slate-900 mb-2">通知</h3>
+            <p id="msg-dialog-desc" class="text-sm text-slate-600 mb-5 leading-relaxed">說明內容</p>
+            <div id="msg-dialog-buttons" class="flex justify-center space-x-3">
+                <!-- 按鈕動態插入 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮動成就通知 Toast -->
+    <div id="toast-container" class="toast fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border-2 border-amber-400 flex items-center space-x-3 z-50">
+        <div class="w-10 h-10 bg-amber-400 text-slate-950 rounded-xl flex items-center justify-center text-xl shrink-0 font-black">
+            🏆
+        </div>
+        <div>
+            <div class="text-[10px] text-amber-300 font-bold uppercase tracking-wider">成就達成</div>
+            <div id="toast-title" class="text-sm font-black text-white">初試啼聲</div>
+        </div>
+    </div>
+
+    <!-- 遊戲完整邏輯與 80 題庫腳本 -->
+    <script>
+        // 80 題七年級自然 1~2 章與微觀巨觀試煉題庫
+        const questionDatabase = [
+            // Stage 1 (題 1~10)
+            { q: "生物體分解養分產生能量，或將吸收的養分合成體內物質的化學反應過程，統稱為下列何者？", a: "代謝", w: ["感應", "生長", "繁殖"] },
+            { q: "植物種子吸收水分後發芽並漸漸長成大樹，這屬於生命現象中的何者？", a: "生長與發育", w: ["代謝作用", "感應現象", "繁殖現象"] },
+            { q: "植物幼苗嫩芽向著光線方向生長（向光性），屬於生命現象中的哪一項？", a: "感應", w: ["代謝", "繁殖", "遺傳"] },
+            { q: "親代產生後代以延續種族生命的過程，稱為生命現象中的哪一項？", a: "繁殖", w: ["感應", "生長", "代謝"] },
+            { q: "地球上所有生物及其生存環境的總稱，稱為什麼？", a: "生物圈", w: ["生態系", "群集", "生物群"] },
+            { q: "生物圈的垂直分佈範圍，大約涵蓋海平面上下各約多少距離？", a: "10公里", w: ["100公里", "1公里", "50公里"] },
+            { q: "若將地球比喻為一顆蘋果，則生物圈的厚度大約相當於蘋果的哪一個部分？", a: "蘋果皮", w: ["果肉", "蘋果核", "整顆蘋果"] },
+            { q: "生物維持生命生存所必須具備的四項基本要素包括陽光、空氣、水與下列何者？", a: "養分", w: ["土壤", "壓力", "維生素"] },
+            { q: "萬米深海的海溝由於缺乏何者，導致當地的生產者無法進行光合作用？", a: "陽光", w: ["氧氣", "水分", "二氧化碳"] },
+            { q: "仙人掌將葉演化成針狀葉，其最主要的功能是為了達成什麼適應目的？", a: "減少水分蒸散", w: ["增加光合作用", "加速水分吸收", "防禦病原體"] },
+
+            // Stage 2 (題 11~20)
+            { q: "鐘乳石在石灰岩溶洞中會因礦物質沉積而漸漸變大，此過程是否屬於生命現象？", a: "不屬於生命現象", w: ["屬於生長現象", "屬於代謝現象", "屬於繁殖現象"] },
+            { q: "蝙蝠在黑暗中利用超音波回聲定位來捕捉飛蛾昆蟲，這主要表現了何種生命現象？", a: "感應與運動", w: ["生殖與繁衍", "體內能量代謝", "個體發育"] },
+            { q: "在科學探究步驟中，運用眼耳口鼻等感官或儀器收集現象資訊的過程稱為什麼？", a: "觀察", w: ["提出假設", "設計實驗", "歸納學說"] },
+            { q: "根據觀察到的現象或問題，提出可能的原因或預測性答案的步驟稱為？", a: "提出假設", w: ["觀察問題", "操作實驗", "分析結論"] },
+            { q: "為了驗證假設是否正確，科學家必須進一步設計並執行哪一個步驟？", a: "進行實驗", w: ["發表學說", "直接修正假設", "提出觀察"] },
+            { q: "在探究實驗中，實驗者人為改變且為實驗組與對照組之間「唯一不同」的條件稱為？", a: "操作變因", w: ["控制變因", "應變變因", "隨機變因"] },
+            { q: "在探究實驗中，除了操作變因外，其他所有組別必須嚴格保持相同的條件稱為？", a: "控制變因", w: ["操作變因", "應變變因", "環境變因"] },
+            { q: "隨著操作變因改變而產生的實驗測量數據或觀察結果，稱為下列何種變因？", a: "應變變因", w: ["控制變因", "操作變因", "常數變因"] },
+            { q: "一個設計良好的對照實驗中，實驗組與對照組之間的人為操作變因通常有幾個？", a: "只能有一個", w: ["可以有三個", "越多越好", "至少兩個"] },
+            { q: "在對照實驗設計中，作為參考對照基準、未施加特殊人為處理條件的一組稱為？", a: "對照組", w: ["實驗組", "變異組", "觀察組"] },
+
+            // Stage 3 (題 21~30)
+            { q: "研究「不同溫度對酵素活性影響」的實驗中，人為設定的不同溫度條件屬於何種變因？", a: "操作變因", w: ["控制變因", "應變變因", "干擾變因"] },
+            { q: "研究「光照對種子發芽率影響」時，兩組實驗所給予的「水分與種子數量」屬於？", a: "控制變因", w: ["操作變因", "應變變因", "實驗結果"] },
+            { q: "研究「不同肥料對植物生長高度影響」時，最後測量得到的「植物生長高度」屬於？", a: "應變變因", w: ["操作變因", "控制變因", "設定變因"] },
+            { q: "當實驗獲得的數據經過多次驗證均與原先提出的假設不符合時，科學家應該如何處理？", a: "修正假設並重新設計實驗", w: ["修改數據以符合假設", "直接宣告發表學說", "放棄所有科學探究"] },
+            { q: "測試新藥止痛效果時，甲組給予新藥，乙組給予無藥效的澱粉膠囊，則乙組稱為？", a: "對照組", w: ["實驗組", "雙盲組", "誘導組"] },
+            { q: "為減少實驗操作過程中的偶然誤差，實驗通常需要進行多次重複試驗並計算何者？", a: "平均值", w: ["極大值", "總和數值", "隨機取樣值"] },
+            { q: "在科學探究中，經多次驗證確立的「學說」，若未來出現無法解釋的新事證時會如何？", a: "仍可能被修正或廢棄", w: ["成為永恆真理不可更動", "新事證必定錯誤", "自動升格為定律"] },
+            { q: "觀察細胞等微小且透光的標本時，最常使用能讓光線穿透標本的何種顯微鏡？", a: "複式顯微鏡", w: ["解剖顯微鏡", "望遠鏡", "電子穿透鏡"] },
+            { q: "觀察昆蟲翅膀表面、花粉粒或花瓣等不透光且具立體感的表面結構時，適合使用？", a: "解剖顯微鏡", w: ["複式顯微鏡", "相位差顯微鏡", "放大透鏡"] },
+            { q: "複式顯微鏡的「總放大倍率」計算方式為下列何者？", a: "目鏡放大倍率乘以物鏡放大倍率", w: ["目鏡加上物鏡倍率", "物鏡倍率除以目鏡", "僅由物鏡決定"] },
+
+            // Stage 4 (題 31~40)
+            { q: "使用 10× 目鏡與 40× 物鏡時，該複式顯微鏡的總放大倍率為多少倍？", a: "400倍", w: ["50倍", "40倍", "100倍"] },
+            { q: "複式顯微鏡視野中所呈現的影像特徵為下列何者？", a: "上下顛倒、左右相反的平面像", w: ["正立放大的立體像", "上下顛倒但左右不變", "正立縮小的平面像"] },
+            { q: "若在複式顯微鏡下觀察載玻片上的英文字母「qp」，視野中所看到的影像應為？", a: "bd", w: ["qp", "pq", "dp"] },
+            { q: "在複式顯微鏡下觀察時，若目標影像偏向視野的左上方，欲移回中央玻片應向何方移動？", a: "左上方", w: ["右下方", "右上方", "左下方"] },
+            { q: "雙筒解剖顯微鏡視野中所呈現的影像特徵為下列何者？", a: "正立放大的立體像", w: ["上下顛倒的平面像", "左右顛倒的平面像", "上下左右皆顛倒"] },
+            { q: "當複式顯微鏡由低倍物鏡轉換至高倍物鏡觀察時，視野範圍會產生何種變化？", a: "視野範圍變小", w: ["視野範圍變大", "範圍維持不變", "範圍先變大再變小"] },
+            { q: "當複式顯微鏡由低倍物鏡轉換至高倍物鏡觀察時，視野明亮度會如何變化？", a: "視野會變暗", w: ["視野會變亮", "明暗完全不變", "視野忽明忽暗"] },
+            { q: "當複式顯微鏡由低倍物鏡轉換至高倍物鏡觀察時，視野中能看到的細胞數量會？", a: "能看到的細胞數量變少", w: ["細胞數量變多", "細胞數量不變", "無法看到任何細胞"] },
+            { q: "想要更換複式顯微鏡不同倍率的物鏡時，應該轉動顯微鏡的哪一個部位？", a: "旋轉盤", w: ["粗調節輪", "細調節輪", "載物臺"] },
+            { q: "在高倍物鏡下對焦或微調影像時，操作上有何嚴格禁忌？", a: "嚴禁轉動粗調節輪", w: ["嚴禁轉動細調節輪", "不可轉動反光鏡", "不可調節光圈"] },
+
+            // Stage 5 (題 41~50)
+            { q: "在高倍物鏡下若觀察到的影像略微模糊，只能轉動哪一個構造進行精確對焦？", a: "細調節輪", w: ["粗調節輪", "旋轉盤", "集光器"] },
+            { q: "若複式顯微鏡視野光線過暗，下列何種調整方式有助於增加進光量？", a: "調大光圈或切換為凹面鏡", w: ["調小光圈並用平面鏡", "換成更高倍物鏡", "將標本塗黑"] },
+            { q: "製作水抹玻片標本時，蓋上蓋玻片應以鑷子夾住呈幾度角緩緩放下以避免氣泡？", a: "45度角", w: ["90度直角", "180度水平", "10度角"] },
+            { q: "顯微鏡視野中若出現具粗黑外邊、中央極亮的圓形輪廓，輕壓會變形，通常是什麼？", a: "氣泡", w: ["細胞核", "葉綠體", "液泡"] },
+            { q: "在低倍鏡 100× 下看到直線排列有 12 個細胞，若更換為 400× 高倍鏡，預計可看到幾顆？", a: "3個", w: ["48個", "6個", "1個"] },
+            { q: "17 世紀英國科學家虎克使用自製顯微鏡觀察軟木栓切片，首次命名了什麼名詞？", a: "細胞 (cell)", w: ["細胞核", "粒線體", "染色質"] },
+            { q: "虎克當年在軟木栓死組織切片中所觀察到的一個個蜂窩狀小格子，實際上只是細胞的？", a: "細胞壁", w: ["細胞膜", "細胞核", "葉綠體"] },
+            { q: "提出「生物體皆由細胞構成，細胞是生命構造與機能基本單位」之細胞學說的是？", a: "許旺與許萊登", w: ["虎克與雷文霍克", "孟德爾與達爾文", "林奈與巴斯德"] },
+            { q: "細胞學說經後續科學家補充後確立，新細胞是由何者經由分裂而產生的？", a: "原有細胞", w: ["無機化合物", "空氣與水", "自發產生"] },
+            { q: "動植物細胞皆普遍具備的三大基本構造包括細胞膜、細胞質以及下列何者？", a: "細胞核", w: ["細胞壁", "葉綠體", "大液泡"] },
+
+            // Stage 6 (題 51~60)
+            { q: "細胞中控制物質進出、主要由脂質雙層與蛋白質所組成的構造是何者？", a: "細胞膜", w: ["細胞壁", "細胞質", "細胞核"] },
+            { q: "細胞內進行多數生化代謝反應的主要膠狀液體場所稱為什麼？", a: "細胞質", w: ["細胞液", "細胞核", "染色質"] },
+            { q: "含有遺傳物質 (DNA)，被稱為細胞生命活動總指揮中心（生命中樞）的構造是？", a: "細胞核", w: ["粒線體", "核糖體", "內質網"] },
+            { q: "被稱為細胞內的「發電廠」，能進行呼吸作用分解養分釋放能量的胞器是？", a: "粒線體", w: ["葉綠體", "高基氏體", "液泡"] },
+            { q: "植物細胞中能吸收太陽光能進行光合作用以製造葡萄糖的綠色胞器是？", a: "葉綠體", w: ["粒線體", "中心粒", "溶體"] },
+            { q: "植物細胞中負責儲存水分、養分與代謝廢物的主要囊狀構造稱為？", a: "液泡", w: ["葉綠體", "粒線體", "細胞核"] },
+            { q: "成熟的植物細胞體內通常具有何種特徵的液泡？", a: "單一個且巨大", w: ["數量極多但微小", "完全不具液泡", "與動物液泡大小相同"] },
+            { q: "植物細胞最外層由纖維素構成，具保護支持與維持固定形狀功能的構造是？", a: "細胞壁", w: ["細胞膜", "角質層", "莢膜"] },
+            { q: "觀察洋蔥表皮細胞時，常滴加何種染劑以便將無色的細胞核染上顏色利於觀察？", a: "亞甲藍液或碘液", w: ["生理食鹽水", "本氏液", "酒精"] },
+            { q: "洋蔥鱗葉「表皮細胞」雖然屬於植物細胞，但在顯微鏡下觀察卻沒有下列何種構造？", a: "葉綠體", w: ["細胞壁", "細胞核", "細胞膜"] },
+
+            // Stage 7 (題 61~70)
+            { q: "鴨跖草葉片下表皮成對分布、呈半月形且含有葉綠體以控制氣孔開閉的細胞是？", a: "保衛細胞", w: ["表皮細胞", "葉肉細胞", "維管束細胞"] },
+            { q: "動物細胞相較於典型綠色植物細胞，缺少了哪兩項重要構造？", a: "細胞壁與葉綠體", w: ["細胞核與細胞膜", "粒線體與液泡", "細胞膜與核仁"] },
+            { q: "若以顯微操作技術將細胞核自阿米巴原蟲體內剔除，該個體最終將會如何？", a: "失去代謝調控而死亡", w: ["分裂成更多個體", "演化為植物", "不受任何影響"] },
+            { q: "人類口腔黏膜細胞在顯微鏡下觀察外形扁平且不規則，主要是因為其缺少何種構造？", a: "細胞壁", w: ["細胞膜", "細胞質", "粒線體"] },
+            { q: "藍綠菌屬於原核生物，其細胞在構造上缺乏真核生物所擁有的哪一項特徵？", a: "核膜包裹的細胞核", w: ["遺傳物質DNA", "細胞膜", "進行化學反應能力"] },
+            { q: "分子由高濃度區域自然向低濃度區域擴散均勻分布的現象稱為什麼？", a: "擴散作用", w: ["主動吸收", "同化作用", "消化作用"] },
+            { q: "物質透過擴散作用進出細胞膜的過程中，是否需要細胞消耗能量？", a: "不需要消耗能量", w: ["需要消耗大量ATP", "需外界光能驅動", "僅夜間耗能"] },
+            { q: "氧氣、二氧化碳等不帶電荷的氣體小分子，主要是以何種途徑進出細胞膜？", a: "直接穿過脂質雙層", w: ["經由特殊蛋白質通道", "經由細胞壁孔洞", "包裹於液泡中"] },
+            { q: "水分子透過細胞膜（半透膜）所進行的特殊擴散現象，在生物學上特稱為？", a: "滲透作用", w: ["主動運輸", "過濾作用", "呼吸作用"] },
+            { q: "葡萄糖、胺基酸與特定離子無法直接穿過脂質，必須藉由細胞膜上的何者協助通過？", a: "特殊蛋白質", w: ["纖維素", "膽固醇", "甘油分子"] },
+
+            // Stage 8 (題 71~80)
+            { q: "澱粉與蛋白質等大分子有機養分，能否直接穿過細胞膜進入細胞體內？", a: "無法直接通過，需先消化分解", w: ["可自由穿透脂質", "可經由水通道快速通過", "藉由細胞壁直接吸收"] },
+            { q: "將人類紅血球細胞放入「純水」（低張溶液）中，將會發生何種現象？", a: "大量吸水膨脹破裂", w: ["細胞脫水萎縮", "維持原有雙凹圓盤狀", "發生壁膜分離"] },
+            { q: "將人類紅血球放入高濃度食鹽水中，紅血球將會發生何種形態變化？", a: "細胞失水萎縮", w: ["細胞吸水膨脹破裂", "體積膨脹但維持完好", "形狀不變"] },
+            { q: "人體醫用注射生理食鹽水溶液的氯化鈉質量濃度約為多少？", a: "0.9%", w: ["9.0%", "0.09%", "5.0%"] },
+            { q: "將植物細胞放入純水中，細胞雖然吸水膨脹卻不會破裂，最主要是因為具有何者？", a: "細胞壁的保護與支持", w: ["堅韌的細胞膜", "大型液泡收縮", "葉綠體阻擋"] },
+            { q: "將洋蔥表皮細胞放入高濃度濃鹽水中，細胞質與細胞膜失水縮小造成的現象稱為？", a: "壁膜分離", w: ["溶血現象", "細胞出芽", "光合作用終止"] },
+            { q: "醃製高麗菜或製作泡菜時加入大量食鹽，菜葉會變軟塌，是因為細胞發生何事？", a: "細胞失水縮小", w: ["細胞大量吸水", "細胞壁溶解", "葉綠素流失"] },
+            { q: "人體的「血液」在生物體多層次的組成架構中，屬於下列哪一個層次？", a: "組織 (結締組織)", w: ["細胞", "器官", "器官系統"] },
+            { q: "植物體的組成層次相較於人體等高等動物，普遍缺乏了哪一個層次？", a: "器官系統", w: ["細胞層次", "組織層次", "器官層次"] },
+            { q: "植物的根、莖、葉在生物組成層次上屬於器官，依功能分類屬於哪一類器官？", a: "營養器官", w: ["生殖器官", "感覺器官", "呼吸器官"] }
+        ];
+
+        // 勇者稱號清單 (隨等級解鎖)
+        const PLAYER_TITLES = [
+            { level: 1, title: "實習觀察員", avatar: "🔍" },
+            { level: 2, title: "微觀探險家", avatar: "🥼" },
+            { level: 3, title: "顯微調焦大師", avatar: "🔬" },
+            { level: 4, title: "細胞學派學者", avatar: "🧬" },
+            { level: 5, title: "滲透平衡導師", avatar: "💧" },
+            { level: 6, title: "巨觀生態守護者", avatar: "🌿" },
+            { level: 7, title: "生命能量宗師", avatar: "⚡" },
+            { level: 8, title: "生命宇宙探索大導師", avatar: "👑" }
+        ];
+
+        // 8 大關卡神器掉落清單 (涵蓋全部關卡，可自由穿戴/卸下)
+        const EQUIPMENT_LIST = [
+            { id: 1, stageReq: 0, name: "觀察紀錄手札", icon: "📓", type: "隨身道具", effect: "初始裝備，記錄每一次答題經驗", bonus: 2, unlocked: true, equipped: true },
+            { id: 2, stageReq: 1, name: "虎克自製單透鏡", icon: "🔍", type: "手持法器", effect: "初代微觀之眼，答題EXP +5%", bonus: 5, unlocked: false, equipped: false },
+            { id: 3, stageReq: 2, name: "探究精準滴管杖", icon: "🧪", type: "手持法器", effect: "掌控操作變因，答題EXP +8%", bonus: 8, unlocked: false, equipped: false },
+            { id: 4, stageReq: 3, name: "消色差高倍物鏡", icon: "🔬", type: "核心光學", effect: "視野銳利清晰，答題EXP +10%", bonus: 10, unlocked: false, equipped: false },
+            { id: 5, stageReq: 4, name: "凹面聚光守護盾", icon: "🪞", type: "防禦防具", effect: "聚集明亮光線，答題EXP +12%", bonus: 12, unlocked: false, equipped: false },
+            { id: 6, stageReq: 5, name: "纖維素防護披肩", icon: "🛡", type: "身體防具", effect: "如細胞壁般堅韌，答題EXP +15%", bonus: 15, unlocked: false, equipped: false },
+            { id: 7, stageReq: 6, name: "粒線體高能供能儀", icon: "⚡", type: "能量飾品", effect: "源源不絕的ATP，答題EXP +20%", bonus: 20, unlocked: false, equipped: false },
+            { id: 8, stageReq: 7, name: "保衛細胞氣孔靴", icon: "🍃", type: "足部裝備", effect: "滲透平衡調控，答題EXP +25%", bonus: 25, unlocked: false, equipped: false },
+            { id: 9, stageReq: 8, name: "DNA 雙螺旋神杖", icon: "🧬", type: "傳奇神器", effect: "生命密碼大成，答題EXP +35%", bonus: 35, unlocked: false, equipped: false }
+        ];
+
+        let GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbw-KSKq6JlTRw3nzuw2C_8QNRZB6iiMZLSmdAtcKEwO3AlpkGWNXtoWdy_wl3V2SIpy/exec";
+
+        let playerName = "";
+        let currentStage = 1;
+        let currentQuestionInStage = 0; // 0~9
+        let totalQuestionIndex = 0;     // 0~79
+        
+        let playerScore = 0;
+        let playerLevel = 1;
+        let playerExp = 0;
+        let expToNextLevel = 100;
+        let combo = 0;
+
+        let isAnswered = false;
+        let currentLootItem = null; // 當前關卡剛掉落的裝備
+        let achievements = {
+            firstBlood: false,
+            combo5: false,
+            combo10: false,
+            stage1: false
+        };
+
+        const stageChinese = ["一", "二", "三", "四", "五", "六", "七", "八"];
+
+        // 簡易音效合成器 (Web Audio API)
+        let audioCtx = null;
+        function playChime(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+                if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.15);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'equip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(659.25, now); // E5
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12); // A5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'levelup') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1);
+                    osc.frequency.setValueAtTime(659.25, now + 0.2);
+                    osc.frequency.setValueAtTime(880, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                }
+            } catch(e) {}
+        }
+
+        window.onload = function() {
+            const savedGas = localStorage.getItem("BIOLOGY_GAS_URL");
+            if (savedGas) {
+                GAS_ENDPOINT = savedGas;
+                document.getElementById('gas-status-indicator').innerText = "● 已連線自訂試算表";
+            }
+            updatePlayerTitle();
+            updateGearBadges();
+            loadLeaderboard();
+        };
+
+        function getPlayerTitleObj() {
+            let active = PLAYER_TITLES[0];
+            for (let t of PLAYER_TITLES) {
+                if (playerLevel >= t.level) active = t;
+            }
+            return active;
+        }
+
+        function updatePlayerTitle() {
+            const titleObj = getPlayerTitleObj();
+            const badgeEl = document.getElementById('player-title-badge');
+            const avatarEl = document.getElementById('player-avatar-icon');
+            if (badgeEl) badgeEl.innerText = titleObj.title;
+            if (avatarEl) avatarEl.innerText = titleObj.avatar;
+        }
+
+        function getEquippedBonus() {
+            return EQUIPMENT_LIST.reduce((sum, item) => (item.unlocked && item.equipped) ? sum + item.bonus : sum, 0);
+        }
+
+        function updateGearBadges() {
+            const equippedCount = EQUIPMENT_LIST.filter(e => e.unlocked && e.equipped).length;
+            const badge = document.getElementById('gear-count-badge');
+            if (badge) badge.innerText = `${equippedCount}/${EQUIPMENT_LIST.length}`;
+        }
+
+        // 開啟裝備庫視窗
+        function openEquipmentModal() {
+            const titleObj = getPlayerTitleObj();
+            document.getElementById('modal-char-name').innerText = playerName || "自然勇者";
+            document.getElementById('modal-char-avatar').innerText = titleObj.avatar;
+            document.getElementById('modal-char-title').innerText = titleObj.title;
+
+            renderEquipmentList();
+            document.getElementById('equipment-modal').classList.remove('hidden');
+        }
+
+        function renderEquipmentList() {
+            const container = document.getElementById('equipment-slots-container');
+            container.innerHTML = '';
+
+            let equippedCount = 0;
+            let totalBonus = getEquippedBonus();
+
+            EQUIPMENT_LIST.forEach(eq => {
+                if (eq.unlocked && eq.equipped) equippedCount++;
+
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-2xl border-2 flex items-center justify-between gap-2.5 transition ${
+                    !eq.unlocked
+                        ? 'bg-slate-100/70 border-slate-200 opacity-60'
+                        : eq.equipped
+                            ? 'bg-amber-50/95 border-amber-400 shadow-sm'
+                            : 'bg-white border-slate-300'
+                }`;
+
+                let actionButtonHtml = '';
+                if (!eq.unlocked) {
+                    actionButtonHtml = `<span class="text-[11px] font-bold text-slate-400">通關第${eq.stageReq}關解鎖</span>`;
+                } else if (eq.equipped) {
+                    actionButtonHtml = `
+                        <button onclick="toggleEquip(${eq.id})" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-lg shadow-sm flex items-center space-x-1 shrink-0">
+                            <i class="fas fa-check"></i>
+                            <span>已裝備</span>
+                        </button>
+                    `;
+                } else {
+                    actionButtonHtml = `
+                        <button onclick="toggleEquip(${eq.id})" class="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-300 active:scale-95 text-xs font-bold rounded-lg shrink-0">
+                            <span>裝上</span>
+                        </button>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 ${
+                            eq.unlocked 
+                                ? (eq.equipped ? 'bg-amber-200/70 text-slate-900 border border-amber-400' : 'bg-slate-100 text-slate-700')
+                                : 'bg-slate-200 text-slate-400'
+                        }">
+                            ${eq.unlocked ? eq.icon : '🔒'}
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center space-x-1.5">
+                                <span class="text-[11px] font-bold ${eq.unlocked ? 'text-amber-800' : 'text-slate-400'}">${eq.type}</span>
+                                ${eq.unlocked ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded">+${eq.bonus}%</span>` : ''}
+                            </div>
+                            <div class="font-black text-sm text-slate-900 truncate">${eq.name}</div>
+                            <div class="text-[11px] text-slate-500 truncate">${eq.effect}</div>
+                        </div>
+                    </div>
+                    <div>${actionButtonHtml}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('modal-gear-bonus').innerText = totalBonus;
+            document.getElementById('modal-equipped-count').innerText = equippedCount;
+            updateGearBadges();
+        }
+
+        // 切換裝備狀態 (裝上 / 卸下)
+        function toggleEquip(itemId) {
+            const item = EQUIPMENT_LIST.find(e => e.id === itemId);
+            if (!item || !item.unlocked) return;
+
+            item.equipped = !item.equipped;
+            playChime('equip');
+
+            if (item.equipped) {
+                showToast("裝備已穿戴！", `已裝上【${item.name}】（+${item.bonus}% EXP）`);
+            } else {
+                showToast("裝備已卸下", `已卸下【${item.name}】`);
+            }
+
+            renderEquipmentList();
+        }
+
+        function closeEquipmentModal() {
+            document.getElementById('equipment-modal').classList.add('hidden');
+        }
+
+        function startGame() {
+            const input = document.getElementById('player-input-name').value.trim();
+            if (!input) {
+                openMsgDialog("出發提醒", "請先輸入您的班級、座號與姓名，方可展開試煉！", false);
+                return;
+            }
+            playerName = input;
+            document.getElementById('player-tag').innerText = playerName;
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('status-bar').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            
+            document.getElementById('current-stage').innerText = currentStage;
+            document.getElementById('stage-progress').innerText = currentQuestionInStage + 1;
+            document.getElementById('total-q-num').innerText = totalQuestionIndex + 1;
+            document.getElementById('player-score').innerText = playerScore;
+            document.getElementById('combo-count').innerText = combo;
+
+            const qData = questionDatabase[totalQuestionIndex];
+            document.getElementById('question-text').innerText = qData.q;
+
+            let options = [
+                { text: qData.a, isCorrect: true },
+                { text: qData.w[0], isCorrect: false },
+                { text: qData.w[1], isCorrect: false },
+                { text: qData.w[2], isCorrect: false }
+            ];
+            options = shuffleArray(options);
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn bg-white border-2 border-slate-300 text-slate-800 text-base sm:text-lg lg:text-xl font-bold py-3 px-4 rounded-xl text-left w-full flex items-center min-h-[58px]';
+                
+                const letter = String.fromCharCode(65 + index);
+                btn.innerHTML = `<span class="text-indigo-600 mr-2.5 text-lg w-6 text-center font-extrabold shrink-0">${letter}.</span> <span class="flex-1 leading-snug">${opt.text}</span>`;
+                
+                btn.onclick = () => checkAnswer(btn, opt.isCorrect, qData.a);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(btn, isCorrect, correctAnswerText) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                btn.classList.add('correct-anim');
+                playChime('correct');
+                combo++;
+
+                // 計算所有穿戴裝備加成
+                const bonusPercent = getEquippedBonus();
+                const baseScore = 100 + (combo * 20);
+                const gainedScore = Math.round(baseScore * (1 + bonusPercent / 100));
+                
+                playerScore += gainedScore;
+                gainExp(25 + (combo * 5));
+                
+                const floatExp = document.getElementById('float-exp');
+                floatExp.innerText = `+${gainedScore} EXP!`;
+                floatExp.classList.remove('hidden');
+                floatExp.classList.add('exp-float');
+                setTimeout(() => {
+                    floatExp.classList.remove('exp-float');
+                    floatExp.classList.add('hidden');
+                }, 850);
+
+                checkAchievements();
+                setTimeout(handleNextFlow, 950);
+            } else {
+                combo = 0;
+                btn.classList.add('wrong-anim');
+                
+                buttons.forEach(b => {
+                    if (b.innerText.includes(correctAnswerText)) {
+                        b.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
+                    }
+                });
+
+                setTimeout(() => {
+                    showWrongModal(correctAnswerText);
+                }, 350);
+            }
+        }
+
+        function gainExp(amount) {
+            playerExp += amount;
+            if (playerExp >= expToNextLevel) {
+                playerExp -= expToNextLevel;
+                const oldLevel = playerLevel;
+                playerLevel++;
+                document.getElementById('player-level').innerText = playerLevel;
+                updatePlayerTitle();
+                showRichLevelUp(oldLevel, playerLevel);
+            }
+            
+            const percentage = Math.min((playerExp / expToNextLevel) * 100, 100);
+            document.getElementById('exp-bar').style.width = percentage + '%';
+            document.getElementById('exp-text').innerText = `${playerExp} / ${expToNextLevel}`;
+            document.getElementById('player-score').innerText = playerScore;
+        }
+
+        function showRichLevelUp(oldLvl, newLvl) {
+            playChime('levelup');
+            document.getElementById('levelup-old-lvl').innerText = oldLvl;
+            document.getElementById('levelup-new-lvl').innerText = newLvl;
+            document.getElementById('levelup-new-title').innerText = getPlayerTitleObj().title;
+
+            const modal = document.getElementById('rich-levelup-modal');
+            const content = document.getElementById('rich-levelup-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeLevelUpModal() {
+            const modal = document.getElementById('rich-levelup-modal');
+            const content = document.getElementById('rich-levelup-content');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 180);
+        }
+
+        function showWrongModal(correctText) {
+            const overlay = document.getElementById('wrong-modal-overlay');
+            const content = document.getElementById('wrong-modal-content');
+            document.getElementById('correct-answer-display').innerText = correctText;
+            
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeWrongModalAndNext() {
+            const overlay = document.getElementById('wrong-modal-overlay');
+            const content = document.getElementById('wrong-modal-content');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                handleNextFlow();
+            }, 180);
+        }
+
+        function handleNextFlow() {
+            currentQuestionInStage++;
+            totalQuestionIndex++;
+
+            if (currentQuestionInStage === 10) {
+                if (currentStage === 8) {
+                    showGameClear();
+                } else {
+                    showStageClear();
+                }
+            } else {
+                loadQuestion();
+            }
+        }
+
+        // 關卡突破結算（掉落神器與自動裝備）
+        function showStageClear() {
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-stage-clear').classList.remove('hidden');
+            
+            document.getElementById('clear-stage-num').innerText = currentStage;
+            document.getElementById('clear-stage-cn').innerText = stageChinese[currentStage - 1] || currentStage;
+            document.getElementById('clear-level').innerText = playerLevel;
+            document.getElementById('clear-score').innerText = playerScore;
+
+            // 尋找對應關卡的掉落裝備
+            const loot = EQUIPMENT_LIST.find(e => e.stageReq === currentStage);
+            const lootCard = document.getElementById('stage-loot-card');
+            
+            if (loot) {
+                currentLootItem = loot;
+                loot.unlocked = true;
+                loot.equipped = true; // 預設自動為玩家穿戴上
+
+                document.getElementById('loot-icon').innerText = loot.icon;
+                document.getElementById('loot-name').innerText = loot.name;
+                document.getElementById('loot-desc').innerText = `${loot.effect}（${loot.type}，+${loot.bonus}% EXP）`;
+                
+                updateLootCardEquipUI();
+                lootCard.classList.remove('hidden');
+
+                playChime('equip');
+                showToast("獲取新裝備！", `解鎖並裝上了【${loot.name}】！`);
+            } else {
+                currentLootItem = null;
+                lootCard.classList.add('hidden');
+            }
+
+            updateGearBadges();
+
+            if (currentStage === 1 && !achievements.stage1) {
+                achievements.stage1 = true;
+                showToast("毅力之光", "成功突破第一重試煉！");
+            }
+            
+            postScoreToGAS(false);
+        }
+
+        function updateLootCardEquipUI() {
+            if (!currentLootItem) return;
+            const statusEl = document.getElementById('loot-equip-status');
+            const btnEl = document.getElementById('loot-equip-btn');
+
+            if (currentLootItem.equipped) {
+                statusEl.className = "text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full";
+                statusEl.innerHTML = `<i class="fas fa-check-circle mr-1"></i>已為您自動裝上`;
+                btnEl.innerText = "卸下裝備";
+                btnEl.className = "px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-800 font-bold rounded-lg text-xs transition";
+            } else {
+                statusEl.className = "text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full";
+                statusEl.innerHTML = `<i class="fas fa-box mr-1"></i>已存入裝備庫（未裝備）`;
+                btnEl.innerText = "🌟 立即裝上";
+                btnEl.className = "px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black rounded-lg text-xs shadow transition";
+            }
+        }
+
+        function toggleCurrentLootEquip() {
+            if (!currentLootItem) return;
+            currentLootItem.equipped = !currentLootItem.equipped;
+            playChime('equip');
+            updateLootCardEquipUI();
+            updateGearBadges();
+        }
+
+        function triggerChestOpen() {
+            const chest = document.getElementById('stage-chest-icon');
+            chest.classList.add('chest-anim');
+            playChime('levelup');
+            setTimeout(() => {
+                chest.classList.remove('chest-anim');
+            }, 700);
+        }
+
+        function nextStage() {
+            currentStage++;
+            currentQuestionInStage = 0;
+            
+            document.getElementById('screen-stage-clear').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function showGameClear() {
+            // 解鎖第 8 關最終神器
+            const finalLoot = EQUIPMENT_LIST.find(e => e.stageReq === 8);
+            if (finalLoot) {
+                finalLoot.unlocked = true;
+                finalLoot.equipped = true;
+            }
+            updateGearBadges();
+
+            document.getElementById('status-bar').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game-clear').classList.remove('hidden');
+            
+            document.getElementById('final-level').innerText = playerLevel;
+            document.getElementById('final-score').innerText = playerScore;
+            
+            executeSyncScore(true, "全通關(80題)");
+        }
+
+        function saveAndExit() {
+            executeSyncScore(false, `突破第${currentStage}關`, function() {
+                location.reload();
+            });
+        }
+
+        function requestExitEarly() {
+            openMsgDialog("提前結算確認", "確定要結算目前的成績並上傳至雲端排行榜嗎？", true, function() {
+                executeSyncScore(false, `第${currentStage}關中途結算`, function() {
+                    location.reload();
+                });
+            });
+        }
+
+        function openMsgDialog(title, desc, isConfirm, onConfirm) {
+            document.getElementById('msg-dialog-title').innerText = title;
+            document.getElementById('msg-dialog-desc').innerText = desc;
+            const btnContainer = document.getElementById('msg-dialog-buttons');
+            
+            if (isConfirm) {
+                btnContainer.innerHTML = `
+                    <button onclick="closeMsgDialog()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm">取消</button>
+                    <button id="msg-confirm-action" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm">確定結算</button>
+                `;
+                document.getElementById('msg-confirm-action').onclick = function() {
+                    closeMsgDialog();
+                    if (onConfirm) onConfirm();
+                };
+            } else {
+                btnContainer.innerHTML = `
+                    <button onclick="closeMsgDialog()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm">知道了</button>
+                `;
+            }
+            document.getElementById('msg-dialog').classList.remove('hidden');
+        }
+
+        function closeMsgDialog() {
+            document.getElementById('msg-dialog').classList.add('hidden');
+        }
+
+        // 強力多軌成績傳輸機制
+        function executeSyncScore(isFinal, customStatus, callback) {
+            if (!GAS_ENDPOINT || GAS_ENDPOINT.includes("SAMPLE_DEPLOY_ID")) {
+                if (callback) callback();
+                return;
+            }
+
+            const cleanUrl = normalizeGasUrl(GAS_ENDPOINT);
+            const statusText = customStatus || (isFinal ? "全通關(80題)" : `第${currentStage}關中途結算`);
+            
+            const payload = {
+                name: playerName || "無名勇者",
+                score: playerScore,
+                level: playerLevel,
+                stage: currentStage,
+                answered: totalQuestionIndex,
+                completed: statusText,
+                time: new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" })
+            };
+
+            const jsonStr = JSON.stringify(payload);
+
+            // 1. 原生隱藏表單 POST 發射 (完全繞過跨域限制)
+            try {
+                const form = document.getElementById("gas-hidden-form");
+                form.action = cleanUrl;
+                document.getElementById("gas-form-data-input").value = jsonStr;
+                document.getElementById("gas-form-name-input").value = payload.name;
+                document.getElementById("gas-form-score-input").value = payload.score;
+                document.getElementById("gas-form-level-input").value = payload.level;
+                document.getElementById("gas-form-stage-input").value = payload.stage;
+                document.getElementById("gas-form-answered-input").value = payload.answered;
+                document.getElementById("gas-form-completed-input").value = payload.completed;
+                form.submit();
+            } catch(e) {}
+
+            // 2. 備用 Image 請求
+            try {
+                const ping = new Image();
+                ping.src = `${cleanUrl}?action=submit&name=${encodeURIComponent(payload.name)}&score=${payload.score}&level=${payload.level}&stage=${payload.stage}&answered=${payload.answered}&completed=${encodeURIComponent(payload.completed)}&data=${encodeURIComponent(jsonStr)}&t=${Date.now()}`;
+            } catch(e) {}
+
+            // 3. 備用 Fetch no-cors
+            try {
+                fetch(`${cleanUrl}?action=submit&data=${encodeURIComponent(jsonStr)}`, { mode: 'no-cors' }).catch(() => {});
+            } catch(e) {}
+
+            if (callback) {
+                // 提示傳輸中並留有緩衝時間
+                showToast("雲端同步中", "正在將成績登錄至試算表排行榜...");
+                setTimeout(callback, 1200);
+            }
+        }
+
+        function postScoreToGAS(isFinal) {
+            executeSyncScore(isFinal);
+        }
+
+        // 將網址統一轉換為公開標準 macros 網址（移除組織目錄路徑限制）
+        function normalizeGasUrl(rawUrl) {
+            if (!rawUrl) return "";
+            let url = rawUrl.trim();
+            // 若含有 /a/macros/xxx/ 則替換為通用 /macros/ 格式
+            url = url.replace(/\/a\/macros\/[^\/]+\//, "/macros/");
+            return url;
+        }
+
+        function loadLeaderboard() {
+            const listEl = document.getElementById('leaderboard-list');
+            
+            if (!GAS_ENDPOINT || GAS_ENDPOINT.includes("SAMPLE_DEPLOY_ID")) {
+                listEl.innerHTML = `
+                    <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs text-amber-800 mb-2">
+                        💡 提示：點擊上方齒輪可綁定 Google 試算表 GAS 網址。
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs sm:text-sm"><i class="fas fa-spinner fa-spin text-base mb-2"></i><p>載入雲端排名中...</p></div>`;
+
+            const cleanUrl = normalizeGasUrl(GAS_ENDPOINT);
+            const callbackName = 'gas_leaderboard_cb_' + Date.now();
+            let isLoaded = false;
+
+            // 雙軌機制 1：使用 JSONP (完全避開 CORS 阻擋)
+            window[callbackName] = function(data) {
+                isLoaded = true;
+                cleanupJsonp();
+                renderLeaderboardData(data);
+            };
+
+            const cleanupJsonp = () => {
+                delete window[callbackName];
+                const scriptEl = document.getElementById('jsonp-script-' + callbackName);
+                if (scriptEl) scriptEl.remove();
+            };
+
+            const script = document.createElement('script');
+            script.id = 'jsonp-script-' + callbackName;
+            script.src = `${cleanUrl}?callback=${callbackName}&t=${Date.now()}`;
+            script.onerror = function() {
+                cleanupJsonp();
+                fallbackFetch(cleanUrl);
+            };
+            document.body.appendChild(script);
+
+            // 超時安全處理 (3.5秒)
+            setTimeout(() => {
+                if (!isLoaded) {
+                    cleanupJsonp();
+                    fallbackFetch(cleanUrl);
+                }
+            }, 3500);
+        }
+
+        function fallbackFetch(url) {
+            fetch(`${url}?t=${Date.now()}`)
+                .then(res => res.json())
+                .then(data => renderLeaderboardData(data))
+                .catch(() => {
+                    const listEl = document.getElementById('leaderboard-list');
+                    listEl.innerHTML = `
+                        <div class="text-center py-6 text-slate-400 text-xs">
+                            <p class="font-bold text-slate-600 mb-1">🌱 目前尚無挑戰紀錄</p>
+                            <p>輸入姓名展開試煉，成為排行榜第一人！</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function renderLeaderboardData(data) {
+            const listEl = document.getElementById('leaderboard-list');
+            if (!data || data.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-xs">
+                        <p class="font-bold text-slate-600 mb-1">🌱 目前尚無挑戰紀錄</p>
+                        <p>輸入姓名展開試煉，成為排行榜第一人！</p>
+                    </div>
+                `;
+                return;
+            }
+            let html = `<div class="space-y-1.5">`;
+            data.forEach((item, index) => {
+                let rankBadge = `${index + 1}.`;
+                let rowBg = "bg-slate-50";
+                if (index === 0) { rankBadge = "🥇 1."; rowBg = "bg-amber-100 font-extrabold text-slate-900 border border-amber-300"; }
+                else if (index === 1) { rankBadge = "🥈 2."; rowBg = "bg-slate-100 font-bold text-slate-800"; }
+                else if (index === 2) { rankBadge = "🥉 3."; rowBg = "bg-orange-50 font-bold text-slate-800"; }
+
+                html += `
+                    <div class="flex items-center justify-between p-2 rounded-lg ${rowBg} text-xs sm:text-sm">
+                        <span class="truncate max-w-[170px]">${rankBadge} ${item.name}</span>
+                        <span class="font-mono text-indigo-700 font-bold">${item.score}分</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            listEl.innerHTML = html;
+        }
+
+        function openGasConfigModal() {
+            document.getElementById('gas-url-input').value = GAS_ENDPOINT.includes("SAMPLE_DEPLOY_ID") ? "" : GAS_ENDPOINT;
+            document.getElementById('gas-modal').classList.remove('hidden');
+        }
+
+        function closeGasConfigModal() {
+            document.getElementById('gas-modal').classList.add('hidden');
+        }
+
+        function saveGasConfig() {
+            const url = document.getElementById('gas-url-input').value.trim();
+            if (url) {
+                GAS_ENDPOINT = url;
+                localStorage.setItem("BIOLOGY_GAS_URL", url);
+                document.getElementById('gas-status-indicator').innerText = "● 已連線自訂試算表";
+            }
+            closeGasConfigModal();
+            loadLeaderboard();
+        }
+
+        function checkAchievements() {
+            if (!achievements.firstBlood && totalQuestionIndex === 0) {
+                achievements.firstBlood = true;
+                showToast("初試啼聲", "答對了第一道生物試煉！");
+            }
+            if (!achievements.combo5 && combo === 5) {
+                achievements.combo5 = true;
+                showToast("勢如破竹", "連續答對 5 題，毅力過人！");
+            }
+            if (!achievements.combo10 && combo === 10) {
+                achievements.combo10 = true;
+                showToast("十全十美", "連續答對 10 題，傲視群雄！");
+            }
+        }
+
+        function showToast(title, subtitle) {
+            const toast = document.getElementById('toast-container');
+            document.getElementById('toast-title').innerText = title;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
