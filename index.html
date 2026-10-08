@@ -325,7 +325,7 @@
                 </div>
             </div>
 
-            <!-- 右側：雲端即時英雄榜 (GAS 試算表同步) -->
+            <!-- 右側：雲端即時英雄榜 (GAS 試算表同步，右側並排固定欄) -->
             <div class="w-full lg:w-80 bg-slate-950/80 rounded-2xl p-3.5 sm:p-4 border-2 border-indigo-500/50 shadow-xl flex flex-col justify-between shrink-0">
                 <div>
                     <div class="flex justify-between items-center border-b border-indigo-500/30 pb-2 mb-2">
@@ -847,8 +847,8 @@
             { name: "巫妖王阿薩斯・微觀終結者", icon: "👑", sub: "終焉之巔・組織器官個體全書" }
         ];
 
-        // 預設 GAS 試算表連線端點
-        let GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbw-KSKq6JlTRw3nzuw2C_8QNRZB6iiMZLSmdAtcKEwO3AlpkGWNXtoWdy_wl3V2SIpy/exec";
+        // 預設 GAS 試算表連線端點 (已更新為最新部署網址)
+        let GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbyjZB89c7wQsx2_REkmwWathw9pMFZt8GlqwZKZii4xPgSEuxgvV7d_DEJmSle-YCY/exec";
 
         // 全局狀態
         let currentMode = "lobby"; // lobby, jewel, monopoly, wow, rpg
@@ -947,10 +947,15 @@
                 else if (px === 21.5) document.getElementById('font-btn-4').click();
             }
 
+            // 更新預設端點並清理舊快取，以最新 GAS 網址為準
             const savedGas = localStorage.getItem("BIOLOGY_GAS_URL");
-            if (savedGas) {
+            if (savedGas && savedGas.includes("AKfycbyjZB89c7wQsx2_REkmwWathw9pMFZt8GlqwZKZii4xPgSEuxgvV7d_DEJmSle-YCY")) {
                 GAS_ENDPOINT = savedGas;
-                document.getElementById('gas-status-indicator').innerText = "● 已連線自訂試算表";
+                document.getElementById('gas-status-indicator').innerText = "● 已連線最新試算表";
+            } else {
+                localStorage.setItem("BIOLOGY_GAS_URL", GAS_ENDPOINT);
+                localStorage.removeItem("CACHED_MASTER_LEADERBOARD");
+                document.getElementById('gas-status-indicator').innerText = "● 連線已備妥";
             }
             loadLeaderboard();
         };
