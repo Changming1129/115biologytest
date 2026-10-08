@@ -343,19 +343,23 @@
                         </div>
                     </div>
                     
-                    <p class="text-[11px] text-slate-400 mb-2 font-medium">即時連線 Google 試算表，角逐第一名！</p>
+                    <div class="flex justify-between items-center text-[11px] text-slate-400 mb-2 font-medium">
+                        <span>即時連線試算表（最高前 100 名）</span>
+                        <span id="leaderboard-count-badge" class="bg-indigo-900/80 text-indigo-300 px-1.5 py-0.5 rounded text-[10px] font-bold">0 筆紀錄</span>
+                    </div>
 
-                    <div id="leaderboard-list" class="space-y-1.5 overflow-y-auto max-h-[300px] pr-1">
+                    <!-- 擴充排行榜容器高度，方便滑動瀏覽前 100 名 -->
+                    <div id="leaderboard-list" class="space-y-1.5 overflow-y-auto max-h-[420px] pr-1.5">
                         <div class="text-center py-6 text-slate-400 text-xs">
                             <i class="fas fa-spinner fa-spin text-base mb-1.5 text-indigo-400"></i>
-                            <p>正在載入最新英雄榜單...</p>
+                            <p>正在載入最新前 100 名英雄榜單...</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between items-center mt-2 font-bold">
                     <span>試算表：<span id="gas-status-indicator" class="text-emerald-400">● 連線已備妥</span></span>
-                    <span class="text-amber-400">四大模式通用榜</span>
+                    <span class="text-amber-400">百大英雄榜</span>
                 </div>
             </div>
         </div>
@@ -464,9 +468,14 @@
                         </div>
                     </div>
 
-                    <button onclick="rollMonopolyDice()" id="monopoly-roll-btn" class="w-full py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow transition active:scale-95 disabled:opacity-40">
-                        擲骰移動棋子
-                    </button>
+                    <div class="flex gap-1.5">
+                        <button onclick="rollMonopolyDice()" id="monopoly-roll-btn" class="flex-1 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow transition active:scale-95 disabled:opacity-40">
+                            擲骰移動棋子
+                        </button>
+                        <button onclick="openQuizBreakthrough()" title="答題充電" class="px-3 py-2 bg-indigo-700 hover:bg-indigo-600 text-white font-black text-xs sm:text-sm rounded-xl shadow transition flex items-center justify-center">
+                            <i class="fas fa-bolt text-yellow-300 mr-1"></i>充電(+5步)
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 當前格子資訊 -->
@@ -1017,6 +1026,7 @@
                 }
             }
             renderJewelUI();
+            updateFeverUI();
         }
 
         function renderJewelUI() {
@@ -1177,42 +1187,63 @@
             if (rainbowBtn) rainbowBtn.disabled = (feverCharge < 80 || isJewelProcessing || isSkillCasting);
         }
 
-        async function castUltimateSkill(type) {
-            // 防刷分驗證：技能正在施放、盤面正在處理、或能量不足時嚴禁呼叫
+        async function castUltimateSkill(type, isFree = false) {
+            // 防刷分與安全防卡死機制
             if (isJewelProcessing || isSkillCasting) return;
-            if (type === 'blast' && feverCharge < 40) return;
-            if (type === 'rainbow' && feverCharge < 80) return;
+            if (!isFree) {
+                if (type === 'blast' && feverCharge < 40) return;
+                if (type === 'rainbow' && feverCharge < 80) return;
+            }
 
             isJewelProcessing = true;
             isSkillCasting = true;
             playSfx('crit');
 
-            if (type === 'blast') {
-                feverCharge = Math.max(0, feverCharge - 40);
-                updateFeverUI();
-                let bomb = [];
-                for (let i = 0; i < 9; i++) {
-                    bomb.push({ r: Math.floor(Math.random() * BOARD_SIZE), c: Math.floor(Math.random() * BOARD_SIZE) });
-                }
-                // false 代表技能引爆不回充能量
-                await processJewelMatches(bomb, false);
-            } else if (type === 'rainbow') {
-                feverCharge = Math.max(0, feverCharge - 80);
-                updateFeverUI();
-                const target = Math.floor(Math.random() * GEM_TYPES.length);
-                let same = [];
-                for (let r = 0; r < BOARD_SIZE; r++) {
-                    for (let c = 0; c < BOARD_SIZE; c++) {
-                        if (jewelBoard[r][c] === target) same.push({ r, c });
+            try {
+                if (type === 'blast') {
+                    if (!isFree) {
+                        feverCharge = Math.max(0, feverCharge - 40);
                     }
-                }
-                // false 代表技能引爆不回充能量
-                await processJewelMatches(same, false);
-            }
+                    updateFeverUI();
+                    
+                    // 隨機選定一個中心點進行 3x3 區域爆破
+                    const centerR = Math.floor(Math.random() * (BOARD_SIZE - 2)) + 1;
+                    const centerC = Math.floor(Math.random() * (BOARD_SIZE - 2)) + 1;
+                    let bombSet = new Set();
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            bombSet.add(`${centerR + dr},${centerC + dc}`);
+                        }
+                    }
+                    let bomb = Array.from(bombSet).map(str => {
+                        const [r, c] = str.split(',').map(Number);
+                        return { r, c };
+                    });
 
-            isSkillCasting = false;
-            isJewelProcessing = false;
-            updateFeverUI();
+                    spawnFloatingText("💥 粒線體熱爆發！", true);
+                    await processJewelMatches(bomb, false);
+                } else if (type === 'rainbow') {
+                    if (!isFree) {
+                        feverCharge = Math.max(0, feverCharge - 80);
+                    }
+                    updateFeverUI();
+                    const target = Math.floor(Math.random() * GEM_TYPES.length);
+                    let same = [];
+                    for (let r = 0; r < BOARD_SIZE; r++) {
+                        for (let c = 0; c < BOARD_SIZE; c++) {
+                            if (jewelBoard[r][c] === target) same.push({ r, c });
+                        }
+                    }
+                    spawnFloatingText("🧬 雙螺旋彩消！", true);
+                    await processJewelMatches(same, false);
+                }
+            } catch(e) {
+                console.error("Skill error:", e);
+            } finally {
+                isSkillCasting = false;
+                isJewelProcessing = false;
+                updateFeverUI();
+            }
         }
 
         function triggerShuffleBoard() {
@@ -1277,28 +1308,41 @@
             const rollBtn = document.getElementById('monopoly-roll-btn');
             if (badge) badge.innerText = `剩 ${monoRoundsLeft} 步`;
             if (center) center.innerText = monoRoundsLeft;
-            if (rollBtn && monoRoundsLeft <= 0) {
-                rollBtn.disabled = true;
-                rollBtn.innerText = "步數已用盡 (請答題充能)";
-            } else if (rollBtn && !isMonoRolling) {
-                rollBtn.disabled = false;
-                rollBtn.innerText = "擲骰移動棋子";
+            if (rollBtn) {
+                if (monoRoundsLeft <= 0) {
+                    rollBtn.disabled = false;
+                    rollBtn.innerText = "⚡ 步數用盡 (點此答題充能)";
+                    rollBtn.className = "flex-1 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-xs sm:text-sm rounded-xl shadow animate-pulse";
+                } else if (!isMonoRolling) {
+                    rollBtn.disabled = false;
+                    rollBtn.innerText = "擲骰移動棋子";
+                    rollBtn.className = "flex-1 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow transition active:scale-95";
+                }
             }
         }
 
         function rollMonopolyDice() {
-            if (isMonoRolling || monoRoundsLeft <= 0) {
-                if (monoRoundsLeft <= 0) {
-                    openMsgDialog("探險步數耗盡", "您的探險步數已用盡！請點擊下方的【釋放生物知識考驗】回答考題獲取額外步數 (+3步)，或點擊結算離開！", false);
-                }
+            if (isMonoRolling) return;
+            if (monoRoundsLeft <= 0) {
+                // 步數耗盡時點擊擲骰，直接彈出知識考驗充能
+                spawnFloatingText("💡 啟動生物考驗充電！", true);
+                openQuizBreakthrough();
                 return;
             }
+
             isMonoRolling = true;
             monoRoundsLeft--;
             updateMonoTurnsUI();
 
-            document.getElementById('monopoly-roll-btn').disabled = true;
+            const rollBtn = document.getElementById('monopoly-roll-btn');
+            if (rollBtn) rollBtn.disabled = true;
             playSfx('dice');
+
+            // 設置 5 秒強制解鎖防呆，避免任何動畫異常導致當機
+            const safetyTimer = setTimeout(() => {
+                isMonoRolling = false;
+                updateMonoTurnsUI();
+            }, 5000);
 
             const diceBox = document.getElementById('monopoly-dice-box');
             const diceVal = Math.floor(Math.random() * 6) + 1;
@@ -1310,6 +1354,7 @@
                 rolls++;
                 if (rolls > 8) {
                     clearInterval(iv);
+                    clearTimeout(safetyTimer);
                     diceBox.innerHTML = `<i class="fas ${diceIcons[diceVal - 1]}"></i>`;
                     stepMonoMove(diceVal);
                 }
@@ -1317,67 +1362,81 @@
         }
 
         function stepMonoMove(remaining) {
-            if (remaining <= 0) {
+            try {
+                if (remaining <= 0) {
+                    isMonoRolling = false;
+                    updateMonoTurnsUI();
+                    handleMonoTileArrival(monoPosition);
+                    return;
+                }
+
+                monoPosition = (monoPosition + 1) % 24;
+                if (monoPosition === 0) {
+                    monoLap++;
+                    document.getElementById('monopoly-lap-badge').innerText = `第 ${monoLap} 圈`;
+                    monoCoins += 200;
+                    monoRoundsLeft += 2; // 通過起點額外獎勵 2 步
+                    addScore(200);
+                    spawnFloatingText("+200 ATP & +2 步！", true);
+                }
+
+                // 更新棋子高亮
+                MONOPOLY_TILES.forEach((_, idx) => {
+                    const el = document.getElementById(`mono-tile-${idx}`);
+                    if (el) el.classList.toggle('active-player', idx === monoPosition);
+                });
+
+                playSfx('pop');
+                setTimeout(() => stepMonoMove(remaining - 1), 200);
+            } catch(e) {
+                console.error("Step error:", e);
                 isMonoRolling = false;
                 updateMonoTurnsUI();
-                handleMonoTileArrival(monoPosition);
-                return;
             }
-
-            monoPosition = (monoPosition + 1) % 24;
-            if (monoPosition === 0) {
-                monoLap++;
-                document.getElementById('monopoly-lap-badge').innerText = `第 ${monoLap} 圈`;
-                monoCoins += 200;
-                addScore(200);
-                spawnFloatingText("+200 ATP 研發補貼！", true);
-            }
-
-            // 更新棋子高亮
-            MONOPOLY_TILES.forEach((_, idx) => {
-                const el = document.getElementById(`mono-tile-${idx}`);
-                if (el) el.classList.toggle('active-player', idx === monoPosition);
-            });
-
-            playSfx('pop');
-            setTimeout(() => stepMonoMove(remaining - 1), 220);
         }
 
         function handleMonoTileArrival(idx) {
-            const tile = MONOPOLY_TILES[idx];
-            document.getElementById('mono-tile-icon').innerText = tile.icon;
-            document.getElementById('mono-tile-name').innerText = tile.name;
-            document.getElementById('mono-tile-desc').innerText = tile.desc;
+            try {
+                const safeIdx = Math.max(0, Math.min(23, idx || 0));
+                const tile = MONOPOLY_TILES[safeIdx] || MONOPOLY_TILES[0];
+                document.getElementById('mono-tile-icon').innerText = tile.icon;
+                document.getElementById('mono-tile-name').innerText = tile.name;
+                document.getElementById('mono-tile-desc').innerText = tile.desc;
 
-            const buyBtn = document.getElementById('mono-buy-btn');
-            const ownerText = document.getElementById('mono-tile-owner');
+                const buyBtn = document.getElementById('mono-buy-btn');
+                const ownerText = document.getElementById('mono-tile-owner');
 
-            if (tile.type === 'prop') {
-                if (!tile.owner) {
-                    ownerText.innerText = "無人佔領";
-                    buyBtn.disabled = false;
-                    buyBtn.innerText = `建設基地 (-${tile.cost} ATP)`;
-                    openQuizBreakthrough(); // 踩地直接考題
+                if (tile.type === 'prop') {
+                    if (!tile.owner) {
+                        ownerText.innerText = "無人佔領";
+                        buyBtn.disabled = (monoCoins < tile.cost);
+                        buyBtn.innerText = `建設基地 (-${tile.cost} ATP)`;
+                        openQuizBreakthrough(); // 踩地觸發答題
+                    } else {
+                        ownerText.innerText = `已持有 (${tile.owner})`;
+                        buyBtn.disabled = true;
+                        buyBtn.innerText = "已持有基地";
+                        addScore(tile.rent);
+                        spawnFloatingText(`+${tile.rent} 基地分紅！`, true);
+                    }
                 } else {
-                    ownerText.innerText = "已開發基地";
+                    ownerText.innerText = "特殊公共地";
                     buyBtn.disabled = true;
-                    buyBtn.innerText = "已持有基地";
-                    addScore(tile.rent);
-                    spawnFloatingText(`+${tile.rent} 基地分紅！`, true);
+                    buyBtn.innerText = "無法購買";
+                    if (tile.type === 'event') {
+                        monoCoins += 150;
+                        spawnFloatingText("+150 ATP 參觀獎勵！", true);
+                    } else if (tile.type === 'penalty') {
+                        monoCoins = Math.max(0, monoCoins - 100);
+                        spawnFloatingText("-100 ATP 失水消耗！", false);
+                    }
                 }
-            } else {
-                ownerText.innerText = "特殊公共地";
-                buyBtn.disabled = true;
-                buyBtn.innerText = "無法購買";
-                if (tile.type === 'event') {
-                    monoCoins += 150;
-                    spawnFloatingText("+150 ATP 參觀獎勵！", true);
-                } else if (tile.type === 'penalty') {
-                    monoCoins = Math.max(0, monoCoins - 100);
-                    spawnFloatingText("-100 ATP 失水消耗！", false);
-                }
+                document.getElementById('mono-coins-display').innerText = monoCoins;
+            } catch(e) {
+                console.error("Tile arrival error:", e);
+                isMonoRolling = false;
+                updateMonoTurnsUI();
             }
-            document.getElementById('mono-coins-display').innerText = monoCoins;
         }
 
         function buyMonopolyTile() {
@@ -1544,8 +1603,10 @@
         // ==========================================
         function openQuizBreakthrough() {
             if (isQuizSubmitting) return;
-            const q = questionDatabase[currentQuestionIndex];
-            document.getElementById('quiz-index-display').innerText = currentQuestionIndex + 1;
+            const safeIdx = currentQuestionIndex % questionDatabase.length;
+            const q = questionDatabase[safeIdx] || questionDatabase[0];
+            
+            document.getElementById('quiz-index-display').innerText = safeIdx + 1;
             document.getElementById('quiz-topic-text').innerText = q.topic;
             document.getElementById('quiz-question-text').innerText = q.q;
 
@@ -1592,33 +1653,42 @@
                 addScore(500);
 
                 if (currentMode === 'jewel') {
-                    chargeFever(30);
+                    chargeFever(25);
                     spawnFloatingText("EXCELLENT! +500 能量分！", true);
                     setTimeout(() => {
                         closeQuizModal();
                         advanceNextGlobalQuestion();
-                        castUltimateSkill('blast');
+                        // 修正：傳入 isFree = true 免費引爆熱爆大招，必定成功引爆盤面！
+                        castUltimateSkill('blast', true);
                         isQuizSubmitting = false;
-                    }, 650);
+                    }, 600);
                 } else if (currentMode === 'monopoly') {
-                    // 大富翁答對：補充 3 步探險步數 + 200 ATP
+                    // 大富翁答對：充能 +5 步探險步數與 +200 ATP
                     monoCoins += 200;
-                    monoRoundsLeft = Math.min(30, monoRoundsLeft + 3);
+                    monoRoundsLeft = Math.min(40, monoRoundsLeft + 5);
                     document.getElementById('mono-coins-display').innerText = monoCoins;
                     updateMonoTurnsUI();
-                    spawnFloatingText("EXCELLENT! +500分 & +3 探險步數！", true);
+                    
+                    // 刷新踩地購買按鈕狀態
+                    const tile = MONOPOLY_TILES[monoPosition];
+                    const buyBtn = document.getElementById('mono-buy-btn');
+                    if (tile && tile.type === 'prop' && !tile.owner && buyBtn) {
+                        buyBtn.disabled = (monoCoins < tile.cost);
+                    }
+
+                    spawnFloatingText("EXCELLENT! +500分 & +5 探險步數！", true);
                     setTimeout(() => {
                         closeQuizModal();
                         advanceNextGlobalQuestion();
                         isQuizSubmitting = false;
-                    }, 650);
+                    }, 600);
                 } else {
                     spawnFloatingText("EXCELLENT! +500 能量分！", true);
                     setTimeout(() => {
                         closeQuizModal();
                         advanceNextGlobalQuestion();
                         isQuizSubmitting = false;
-                    }, 650);
+                    }, 600);
                 }
             } else {
                 btn.className = "p-3.5 bg-rose-950 border-2 border-rose-600 text-white rounded-xl text-left text-sm sm:text-lg font-black flex items-center space-x-3";
@@ -1708,8 +1778,14 @@
         // ==========================================
         // Google Apps Script (GAS) 雲端連線與排行榜
         // ==========================================
+        let isSyncingScore = false; // 防重複提交鎖
+
         function executeSyncScore(isFinal, customStatus, callback) {
+            if (isSyncingScore) return; // 避免同時或重複觸發
+            isSyncingScore = true;
+
             if (!GAS_ENDPOINT || GAS_ENDPOINT.includes("SAMPLE_DEPLOY_ID")) {
+                isSyncingScore = false;
                 if (callback) callback();
                 return;
             }
@@ -1726,6 +1802,7 @@
             };
             const jsonStr = JSON.stringify(payload);
 
+            // 修正：單軌原生表單提交，徹底移除重複的 Image ping，保證試算表僅寫入一筆
             try {
                 const form = document.getElementById("gas-hidden-form");
                 form.action = cleanUrl;
@@ -1737,14 +1814,18 @@
                 document.getElementById("gas-form-answered-input").value = payload.answered;
                 document.getElementById("gas-form-completed-input").value = payload.completed;
                 form.submit();
-            } catch(e) {}
+            } catch(e) {
+                console.error("Form submit error, fallback to beacon:", e);
+                try {
+                    const ping = new Image();
+                    ping.src = `${cleanUrl}?action=submit&data=${encodeURIComponent(jsonStr)}&t=${Date.now()}`;
+                } catch(err) {}
+            }
 
-            try {
-                const ping = new Image();
-                ping.src = `${cleanUrl}?action=submit&name=${encodeURIComponent(payload.name)}&score=${payload.score}&level=${payload.level}&stage=${payload.stage}&answered=${payload.answered}&completed=${encodeURIComponent(payload.completed)}&data=${encodeURIComponent(jsonStr)}&t=${Date.now()}`;
-            } catch(e) {}
-
-            if (callback) setTimeout(callback, 1100);
+            setTimeout(() => {
+                isSyncingScore = false;
+                if (callback) callback();
+            }, 1200);
         }
 
         function loadLeaderboard() {
@@ -1811,7 +1892,10 @@
 
         function renderLeaderboardUI(data) {
             const listEl = document.getElementById('leaderboard-list');
+            const countBadge = document.getElementById('leaderboard-count-badge');
+            
             if (!data || data.length === 0) {
+                if (countBadge) countBadge.innerText = "0 筆紀錄";
                 listEl.innerHTML = `
                     <div class="text-center py-6 text-slate-400 text-xs">
                         <p class="font-bold text-slate-300 mb-1">💎 目前尚無挑戰紀錄</p>
@@ -1821,18 +1905,36 @@
                 return;
             }
 
+            // 支援展示最高前 100 名
+            const top100 = data.slice(0, 100);
+            if (countBadge) countBadge.innerText = `共 ${top100.length} 名勇者`;
+
             let html = ``;
-            data.forEach((item, index) => {
+            top100.forEach((item, index) => {
                 let rankBadge = `#${index + 1}`;
                 let rowBg = "bg-slate-900/70 border-slate-800 text-slate-300";
-                if (index === 0) { rankBadge = "🥇 1"; rowBg = "bg-amber-950/80 text-amber-300 border-amber-500 font-black"; }
-                else if (index === 1) { rankBadge = "🥈 2"; rowBg = "bg-slate-800/90 text-slate-200 border-slate-400 font-bold"; }
-                else if (index === 2) { rankBadge = "🥉 3"; rowBg = "bg-purple-950/80 text-purple-300 border-purple-600 font-bold"; }
+                
+                if (index === 0) { 
+                    rankBadge = "🥇 1"; 
+                    rowBg = "bg-amber-950/85 text-amber-300 border-amber-500 font-black shadow-sm"; 
+                } else if (index === 1) { 
+                    rankBadge = "🥈 2"; 
+                    rowBg = "bg-slate-800/90 text-slate-200 border-slate-400 font-bold"; 
+                } else if (index === 2) { 
+                    rankBadge = "🥉 3"; 
+                    rowBg = "bg-purple-950/80 text-purple-300 border-purple-600 font-bold"; 
+                } else if (index < 10) {
+                    rankBadge = `${index + 1}`;
+                    rowBg = "bg-indigo-950/40 border-indigo-900/60 text-indigo-200 font-medium";
+                }
 
                 html += `
-                    <div class="flex items-center justify-between p-2 rounded-xl border ${rowBg} text-xs sm:text-sm">
-                        <span class="truncate max-w-[170px] font-bold">${rankBadge} ${item.name}</span>
-                        <span class="font-mono text-amber-400 font-black">${item.score} 分</span>
+                    <div class="flex items-center justify-between p-2 rounded-xl border ${rowBg} text-xs sm:text-sm transition hover:brightness-110">
+                        <div class="flex items-center space-x-2 min-w-0 pr-1">
+                            <span class="w-8 shrink-0 text-center font-mono font-bold text-[11px] sm:text-xs text-amber-400/90">${rankBadge}</span>
+                            <span class="truncate max-w-[150px] font-bold" title="${item.name}">${item.name}</span>
+                        </div>
+                        <span class="font-mono text-amber-400 font-black shrink-0 text-xs sm:text-sm">${item.score} 分</span>
                     </div>
                 `;
             });
